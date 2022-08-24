@@ -1,7 +1,35 @@
 import type { NextPage } from "next";
 import Head from "next/head";
+import { useRef, useState } from "react";
+
+const width = 500;
+const height = 500;
 
 const Home: NextPage = () => {
+  const [playing, setPlaying] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const startVideo = () => {
+    setPlaying(true);
+    navigator.mediaDevices
+      .getUserMedia({
+        video: true,
+      })
+      .then((stream) => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      })
+      .catch((err) => console.log(err));
+  };
+
+  const stopVideo = () => {
+    setPlaying(false);
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+  };
+
   return (
     <>
       <Head>
@@ -12,6 +40,24 @@ const Home: NextPage = () => {
 
       <main className="container mx-auto flex flex-col items-center justify-center min-h-screen p-4">
         <h1>Web UI for license recornition</h1>
+
+        <div className="border border-black">
+          <video
+            ref={videoRef}
+            height={height}
+            width={width}
+            muted
+            autoPlay
+            className=""
+          ></video>
+        </div>
+        <div>
+          {playing ? (
+            <button onClick={stopVideo}>Stop</button>
+          ) : (
+            <button onClick={startVideo}>Start</button>
+          )}
+        </div>
       </main>
     </>
   );
