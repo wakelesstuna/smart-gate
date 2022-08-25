@@ -1,34 +1,25 @@
 import type { NextPage } from "next";
 import Head from "next/head";
-import { useRef, useState } from "react";
-
-const width = 500;
-const height = 500;
+import { useEffect, useState } from "react";
+import VideoFeed from "../components/VideoFeed";
 
 const Home: NextPage = () => {
-  const [playing, setPlaying] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const [devices, setDevices] = useState<MediaDeviceInfo[]>();
 
-  const startVideo = () => {
-    setPlaying(true);
+  const lookupMediaDevices = () => {
     navigator.mediaDevices
-      .getUserMedia({
-        video: true,
+      .enumerateDevices()
+      .then((data) => {
+        setDevices(data.filter((item) => item.kind === "videoinput"));
       })
-      .then((stream) => {
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
-      })
-      .catch((err) => console.log(err));
+      .catch((err) => {
+        console.error(`${err.name}: ${err.message}`);
+      });
   };
 
-  const stopVideo = () => {
-    setPlaying(false);
-    if (videoRef.current) {
-      videoRef.current.srcObject = null;
-    }
-  };
+  useEffect(() => {
+    lookupMediaDevices();
+  }, []);
 
   return (
     <>
@@ -41,22 +32,11 @@ const Home: NextPage = () => {
       <main className="container mx-auto flex flex-col items-center justify-center min-h-screen p-4">
         <h1>Web UI for license recornition</h1>
 
-        <div className="border border-black">
-          <video
-            ref={videoRef}
-            height={height}
-            width={width}
-            muted
-            autoPlay
-            className=""
-          ></video>
-        </div>
-        <div>
-          {playing ? (
-            <button onClick={stopVideo}>Stop</button>
-          ) : (
-            <button onClick={startVideo}>Start</button>
-          )}
+        <div className="grid grid-cols-2 gap-6">
+          {devices &&
+            devices.map((device) => (
+              <VideoFeed key={device.deviceId} device={device} />
+            ))}
         </div>
       </main>
     </>
