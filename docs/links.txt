@@ -1,2 +1,5 @@
 python soulution
 https://iotdesignpro.com/projects/real-time-license-plate-recognition-using-raspberry-pi-and-python
+
+python relay switch
+https://www.youtube.com/watch?v=gNg93sfoqtA
