@@ -1,26 +1,7 @@
 import type { NextPage } from "next";
 import Head from "next/head";
-import { useEffect, useState } from "react";
-import VideoFeed from "../components/VideoFeed";
 
 const Home: NextPage = () => {
-  const [devices, setDevices] = useState<MediaDeviceInfo[]>();
-
-  const lookupMediaDevices = () => {
-    navigator.mediaDevices
-      .enumerateDevices()
-      .then((data) => {
-        setDevices(data.filter((item) => item.kind === "videoinput"));
-      })
-      .catch((err) => {
-        console.error(`${err.name}: ${err.message}`);
-      });
-  };
-
-  useEffect(() => {
-    lookupMediaDevices();
-  }, []);
-
   return (
     <>
       <Head>
@@ -30,14 +11,9 @@ const Home: NextPage = () => {
       </Head>
 
       <main className="container mx-auto flex flex-col items-center justify-center min-h-screen p-4">
-        <h1>Web UI for license recornition</h1>
-
-        <div className="grid grid-cols-2 gap-6">
-          {devices &&
-            devices.map((device) => (
-              <VideoFeed key={device.deviceId} device={device} />
-            ))}
-        </div>
+        <h1 className="text-6xl font-semibold">
+          Web UI for license recornition
+        </h1>
       </main>
     </>
   );
