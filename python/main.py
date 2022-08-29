@@ -29,4 +29,4 @@ def root():
     return {"application": "demo-api", "status": "up"}
 
 
-uvicorn.run(api, host="0.0.0.0")
+uvicorn.run(api, host="localhost")
