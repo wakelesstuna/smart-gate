@@ -9,13 +9,13 @@ relay_route = APIRouter()
 @relay_route.get("/open", status_code=OK)
 async def open_gate():
     msg = "Gate opens up"
-    send_notification(title=msg, message="WJR730 at the gates")
+    #send_notification(title=msg, message="WJR730 at the gates")
     print(msg)
-    return msg
+    return {"message": msg, "open": True}
 
 
 @relay_route.get("/close", status_code=OK)
 async def close_gate():
     msg = "Gate closes"
     print(msg)
-    return msg
+    return {"message": msg, "open": False}
