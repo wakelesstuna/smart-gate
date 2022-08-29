@@ -12,14 +12,14 @@ const Home: NextPage = () => {
 
   const openGate = async () => {
     const data: GateResponse = await fetch(
-      "http://localhost:8000/v1/relay/open"
+      "http://192.168.1.176:8000/v1/relay/open"
     ).then((data) => data.json());
     setIsOpen(() => data.open);
   };
 
   const closeGate = async () => {
     const data: GateResponse = await fetch(
-      "http://localhost:8000/v1/relay/close"
+      "http://192.168.1.176:8000/v1/relay/close"
     ).then((data) => data.json());
     setIsOpen(() => data.open);
   };
@@ -34,7 +34,7 @@ const Home: NextPage = () => {
 
       <main className="container mx-auto flex flex-col items-center justify-center min-h-screen p-4">
         <h1 className="text-6xl font-semibold">
-          Web UI for license recornition
+          Web UI for SMART GATE
         </h1>
         <div className="flex flex-col">
           <div className="flex-1 text-center">
