@@ -12,14 +12,14 @@ const Home: NextPage = () => {
 
   const openGate = async () => {
     const data: GateResponse = await fetch(
-      "http://localhost:8000/v1/relay/open"
+      "http://0.0.0.0:8000/v1/relay/open"
     ).then((data) => data.json());
     setIsOpen(() => data.open);
   };
 
   const closeGate = async () => {
     const data: GateResponse = await fetch(
-      "http://localhost:8000/v1/relay/close"
+      "http://0.0.0.0:8000/v1/relay/close"
     ).then((data) => data.json());
     setIsOpen(() => data.open);
   };
