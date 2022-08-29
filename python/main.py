@@ -10,6 +10,8 @@ api.include_router(relay_route, prefix="/v1/relay")
 
 # CORS config
 origins = [
+	
+    "http://192.168.1.176:3000",
     "http://localhost",
     "http://localhost:3000",
     "http://localhost:8080",
