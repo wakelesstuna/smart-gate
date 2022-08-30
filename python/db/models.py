@@ -1,19 +1,21 @@
 from uuid import uuid4
-from sqlalchemy import Column, String, ForeignKey
-from database import Base
+
+from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import UUIDType
 
+from database import Base
 
-class LicensePlate(Base):
-    __tablename__ = "license_plate"
+
+class NumberPlate(Base):
+    __tablename__ = "number_plate"
 
     id = Column(UUIDType(binary=False),
                 primary_key=True,
                 default=uuid4,
                 index=True)
     license_plate = Column(String, unique=True, index=True)
-    users = relationship("User", back_populates="license_plate")
+    users = relationship("User", back_populates="number_plate")
 
 
 class User(Base):
@@ -23,7 +25,7 @@ class User(Base):
                 primary_key=True,
                 default=uuid4,
                 index=True)
-    license_plate_id = Column(UUIDType(binary=False),
-                              ForeignKey("license_plate.id"))
+    number_plate_id = Column(UUIDType(binary=False),
+                              ForeignKey("number_plate.id"))
     name = Column(String, index=True)
-    license_plate = relationship("LicensePlate", back_populates="users")
+    number_plate = relationship("NumberPlate", back_populates="users")

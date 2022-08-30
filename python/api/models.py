@@ -6,7 +6,7 @@ class User(BaseModel):
     name: str
 
 
-class LicensePlate(BaseModel):
+class NumberPlate(BaseModel):
     license_plate: str
     users: List[User]
 

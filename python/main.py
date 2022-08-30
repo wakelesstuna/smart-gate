@@ -1,11 +1,14 @@
-from http.client import OK
 import imp
+from http.client import OK
+
+import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 from api.relay import relay_route
 from db.database import Base, engine
-import uvicorn
 
+# install from requirements: pip -r requirements.txt
 
 # Create database
 Base.metadata.create_all(bind=engine)
