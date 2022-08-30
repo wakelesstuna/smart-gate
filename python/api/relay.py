@@ -1,21 +1,22 @@
 from http.client import OK
 from fastapi import APIRouter
+from python.api.models import GateResponse
 
-from helper.api_helper import send_notification
+from service.notification import send_notification
 
 relay_route = APIRouter()
 
 
-@relay_route.get("/open", status_code=OK)
+@relay_route.get("/open", status_code=OK, response_model=GateResponse)
 async def open_gate():
     msg = "Gate opens up"
    #send_notification(title=msg, message="WJR730 at the gates")
     print(msg)
-    return {"message": msg, "open": True}
+    return GateResponse(message=msg, open=True)
 
 
-@relay_route.get("/close", status_code=OK)
+@relay_route.get("/close", status_code=OK, response_model=GateResponse)
 async def close_gate():
     msg = "Gate closes"
     print(msg)
-    return {"message": msg, "open": False}
+    return GateResponse(message=msg, open=False)

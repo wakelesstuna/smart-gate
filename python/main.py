@@ -1,16 +1,21 @@
 from http.client import OK
+import imp
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from api.relay import relay_route
+from db.database import Base, engine
 import uvicorn
 
+
+# Create database
+Base.metadata.create_all(bind=engine)
+
+# Setup api
 api = FastAPI()
 api.include_router(relay_route, prefix="/v1/relay")
 
-
 # CORS config
 origins = [
-	
     "http://192.168.1.176:3000",
     "http://localhost",
     "http://localhost:3000",
@@ -28,7 +33,7 @@ api.add_middleware(
 
 @api.get("/", status_code=OK, tags=["root"])
 def root():
-    return {"application": "demo-api", "status": "up"}
+    return {"application": "smart-gate-api", "status": "UP"}
 
 
 uvicorn.run(api, host="localhost")
