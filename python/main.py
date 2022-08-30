@@ -1,4 +1,3 @@
-import imp
 from http.client import OK
 
 import uvicorn
