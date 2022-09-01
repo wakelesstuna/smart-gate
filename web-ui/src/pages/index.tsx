@@ -3,8 +3,8 @@ import Head from "next/head";
 import { useState } from "react";
 
 const getBaseUrl = () => {
-  const raspberrypi = false;
-  if (raspberrypi) return "http://192.168.1.176:8000";
+  const raspberrypi = true;
+  if (raspberrypi) return "http://192.168.1.176:8001";
   return "http://localhost:8000";
 };
 
@@ -21,12 +21,14 @@ const Home: NextPage = () => {
   const openGate = async () => {
     const response: Response = await fetch(`${baseUrl}/v1/relay/open`);
     const data: GateResponse = await response.json();
+    console.log("open: ",data)
     setIsOpen(() => data.open);
   };
 
   const closeGate = async () => {
     const response: Response = await fetch(`${baseUrl}/v1/relay/close`);
     const data: GateResponse = await response.json();
+    console.log("close: ",data)
     setIsOpen(() => data.open);
   };
 
