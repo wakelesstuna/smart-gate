@@ -1,6 +1,7 @@
 from http.client import OK
 
 import uvicorn
+import RPi.GPIO as GPIO
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -33,6 +34,18 @@ api.add_middleware(
 )
 
 
+@api.on_event("startup")
+async def startup_event():
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(21, GPIO.OUT)
+
+
+@api.on_event("shutdown")
+def shutdown_event():
+    GPIO.cleanup()
+
+
+@api.on_event("")
 @api.get("/", status_code=OK, tags=["root"])
 def root():
     return {"application": "smart-gate-api", "status": "UP"}
