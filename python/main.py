@@ -1,51 +1,44 @@
-from http.client import OK
 import uvicorn
-import RPi.GPIO as GPIO
-import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from api.relay import relay_route
-from db.database import Base, engine
+from http.client import OK
+
+from app.db.database import init_database_and_tabels
+from app.settings import ORIGINS, PORT, HOST
+from app.api.relay import relay as relay_router
+from app.api.numberplate import number_plate as number_plate_router
+from app.api.camera import camera as camera_router
+from app.service.relay import clean_up_GPIO, init_GPIO
 
 # install from requirements: pip -r requirements.txt
 
-# Create database
-Base.metadata.create_all(bind=engine)
-
 # Setup api
 api = FastAPI()
-api.include_router(relay_route, prefix="/v1/relay")
+api.include_router(relay_router, prefix="/v1/relay")
+api.include_router(number_plate_router, prefix="/v1/number-plate")
+api.include_router(camera_router, prefix="/v1/camera")
 
 # CORS config
-origins = [
-    "http://192.168.1.176:3000",
-    "http://localhost",
-    "http://localhost:3000",
-    "http://localhost:8080",
-]
-
 api.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-print(os.uname().nodename)
 
 @api.on_event("startup")
 async def startup_event():
     print("Running startup events...")
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setup(21, GPIO.OUT)
-    GPIO.output(21, GPIO.HIGH)
+    init_database_and_tabels()
+    init_GPIO()
 
 
 @api.on_event("shutdown")
 def shutdown_event():
     print("Running shotdown events...")
-    GPIO.cleanup()
+    clean_up_GPIO()
 
 
 @api.get("/", status_code=OK, tags=["root"])
@@ -53,4 +46,4 @@ def root():
     return {"application": "smart-gate-api", "status": "UP"}
 
 
-uvicorn.run(api, host="0.0.0.0", port=8001)
+uvicorn.run(api, host=HOST, port=PORT)

@@ -4,7 +4,7 @@ from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import UUIDType
 
-from database import Base
+from app.db.database import Base
 
 
 class NumberPlate(Base):
@@ -14,7 +14,7 @@ class NumberPlate(Base):
                 primary_key=True,
                 default=uuid4,
                 index=True)
-    license_plate = Column(String, unique=True, index=True)
+    number_plate = Column(String, unique=True, index=True)
     users = relationship("User", back_populates="number_plate")
 
 
@@ -26,6 +26,6 @@ class User(Base):
                 default=uuid4,
                 index=True)
     number_plate_id = Column(UUIDType(binary=False),
-                              ForeignKey("number_plate.id"))
+                             ForeignKey("number_plate.id"))
     name = Column(String, index=True)
     number_plate = relationship("NumberPlate", back_populates="users")
