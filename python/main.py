@@ -51,4 +51,4 @@ def root():
     return {"application": "smart-gate-api", "status": "UP"}
 
 
-uvicorn.run(api, host="localhost")
+uvicorn.run(api, host="0.0.0.0")
