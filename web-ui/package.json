@@ -10,9 +10,12 @@
   },
   "dependencies": {
     "@tanstack/react-query": "^4.2.3",
+    "daisyui": "^2.24.0",
     "next": "12.2.5",
     "react": "18.2.0",
+    "react-daisyui": "^2.3.2",
     "react-dom": "18.2.0",
+    "react-icons": "^4.4.0",
     "zod": "^3.18.0"
   },
   "devDependencies": {

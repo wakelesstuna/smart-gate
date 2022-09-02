@@ -1,15 +1,11 @@
 import type { NextPage } from "next";
 import Head from "next/head";
-import { useEffect, useState } from "react";
-
-const getOS = () => {
-  const os = ["Windows", "Linux", "Mac"]; // add your OS values
-  return os.find((v) => navigator.appVersion.indexOf(v) >= 0);
-};
+import { useState } from "react";
+import NavBar from "../components/NavBar";
 
 const getBaseUrl = () => {
-  const raspberrypi = getOS();
-  if (raspberrypi !== "Windows") return "http://192.168.1.176:8001";
+  const raspberrypi = false;
+  if (raspberrypi) return "http://192.168.1.176:8001";
   return "http://localhost:8000";
 };
 
@@ -44,12 +40,25 @@ const Home: NextPage = () => {
         <meta name="description" content="web ui for smart gate" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
+      <NavBar />
 
       <main className="container mx-auto flex flex-col items-center justify-center min-h-screen p-4">
-        <h1 className="text-6xl font-semibold">Web UI for SMART GATE</h1>
+        <h1 className="text-4xl text-white text-center font-semibold">
+          Web UI for SMART GATE
+        </h1>
         <div className="flex flex-col">
-          <div className="flex-1 text-center">
-            <p>Gate is: {isOpen ? "OPEN" : "CLOSE"}</p>
+          <div className="flex-1 text-center my-4">
+            <p className="text-white">
+              Gate is:{" "}
+              <span
+                className={
+                  `px-2 py-[1px] rounded-md font-semibold ` +
+                  (isOpen ? "bg-green-500" : "bg-red-500")
+                }
+              >
+                {isOpen ? "OPEN" : "CLOSE"}
+              </span>
+            </p>
           </div>
           <div className="space-x-8">
             <button className="btn btn-blue" onClick={openGate}>
