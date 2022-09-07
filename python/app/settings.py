@@ -1,7 +1,7 @@
 import os
 
 PORT = os.getenv("PORT", 8001)
-HOST = os.getenv("HOST", "localhost")
+HOST = os.getenv("HOST", "0.0.0.0")
 DATABASE_URI = os.getenv("DATABASE_URI", "sqlite:///sql_app.db")
 STATIC_PATH = os.getenv("STATIC_PATH", "static")
 

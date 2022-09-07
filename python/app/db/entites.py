@@ -1,31 +1,34 @@
 from uuid import uuid4
-
 from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import UUIDType
-
 from app.db.database import Base
 
 
 class NumberPlate(Base):
-    __tablename__ = "number_plate"
+    __tablename__ = "numberPlates"
 
     id = Column(UUIDType(binary=False),
                 primary_key=True,
                 default=uuid4,
                 index=True)
-    number_plate = Column(String, unique=True, index=True)
-    users = relationship("User", back_populates="number_plate")
+    numberPlate = Column(String, unique=True, index=True)
+
+    users = relationship("User", back_populates="numberPlate")
 
 
 class User(Base):
-    __tablename__ = "user"
+    __tablename__ = "users"
 
     id = Column(UUIDType(binary=False),
                 primary_key=True,
                 default=uuid4,
                 index=True)
-    number_plate_id = Column(UUIDType(binary=False),
-                             ForeignKey("number_plate.id"))
     name = Column(String, index=True)
-    number_plate = relationship("NumberPlate", back_populates="users")
+    numberPlateId = Column(UUIDType(binary=False),
+                           ForeignKey("numberPlates.id"))
+
+    numberPlate = relationship("NumberPlate", back_populates="users")
+
+    def __str__(self) -> str:
+        return f"ID: {self.id}\n Name: {self.name}\n PLateID: {self.numberPlateId}"

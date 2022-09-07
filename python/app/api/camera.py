@@ -1,14 +1,12 @@
-import imp
-from pkgutil import ImpImporter
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 
-camera = APIRouter()
+camera_router = APIRouter()
 
 
-@camera.get("/stream")
+@camera_router.get("/stream")
 def stream_video():
-    file_path = "/python/sample.mp4"
+    file_path = "D:\projects\smart-gate\python\sample.mp4"
 
     def iterfile():
         with open(file_path, mode="rb") as file:

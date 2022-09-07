@@ -1,14 +1,39 @@
 from typing import List
+from uuid import UUID
 from pydantic import BaseModel
 
 
-class User(BaseModel):
+class UserBase(BaseModel):
     name: str
 
 
-class NumberPlate(BaseModel):
-    license_plate: str
-    users: List[User]
+class UserCreate(UserBase):
+    pass
+
+
+class User(UserBase):
+    id: UUID
+    numberPlateId: UUID
+
+    class Config:
+        orm_mode = True
+
+
+class NumberPlateBase(BaseModel):
+    numberPlate: str
+
+
+class NumberPlateCreate(NumberPlateBase):
+    users: List[UserCreate] = []
+
+
+class NumberPlate(NumberPlateBase):
+    id: UUID
+    numberPlate: str
+    users: List[User] = []
+
+    class Config:
+        orm_mode = True
 
 
 class GateResponse(BaseModel):

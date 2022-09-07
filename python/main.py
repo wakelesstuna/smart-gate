@@ -5,16 +5,16 @@ from http.client import OK
 
 from app.db.database import init_database_and_tabels
 from app.settings import ORIGINS, PORT, HOST
-from app.api.relay import relay as relay_router
-from app.api.numberplate import number_plate as number_plate_router
-from app.api.camera import camera as camera_router
-from app.service.relay import clean_up_GPIO, init_GPIO
+from app.api.gate_route import gate_router
+from app.api.number_plate_route import number_plate_router
+from app.api.camera import camera_router as camera_router
+from app.service.gate_service import clean_up_GPIO, init_GPIO
 
 # install from requirements: pip -r requirements.txt
 
 # Setup api
 api = FastAPI()
-api.include_router(relay_router, prefix="/v1/relay")
+api.include_router(gate_router, prefix="/v1/gate")
 api.include_router(number_plate_router, prefix="/v1/number-plate")
 api.include_router(camera_router, prefix="/v1/camera")
 

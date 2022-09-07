@@ -1,6 +1,8 @@
 import type { NextPage } from "next";
 import Head from "next/head";
 import { useState } from "react";
+import CloseGateButton from "../components/buttons/CloseGateButton";
+import OpenGateButton from "../components/buttons/OpenGateButton";
 import NavBar from "../components/NavBar";
 
 const getBaseUrl = () => {
@@ -40,6 +42,7 @@ const Home: NextPage = () => {
         <meta name="description" content="web ui for smart gate" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
+
       <NavBar />
 
       <main className="container mx-auto flex flex-col items-center justify-center min-h-screen p-4">
@@ -61,12 +64,8 @@ const Home: NextPage = () => {
             </p>
           </div>
           <div className="space-x-8">
-            <button className="btn btn-blue" onClick={openGate}>
-              Open Gate
-            </button>
-            <button className="btn btn-red" onClick={closeGate}>
-              Close Gate
-            </button>
+            <OpenGateButton setIsOpen={setIsOpen} />
+            <CloseGateButton setIsOpen={setIsOpen} />
           </div>
         </div>
       </main>
