@@ -14,6 +14,7 @@ Project for building a "smart gate" that open it self when a valid number plate 
 <br>
 <br>
 <br>
+
 ## First draft 
 
 <img src="docs/diagram/solution-diagram-V1.png" align="center" alt="diagram">
