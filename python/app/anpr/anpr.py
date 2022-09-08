@@ -1,158 +1,87 @@
-from concurrent.futures import thread
-from lib2to3.pgen2.token import LPAR
-from skimage.segmentation import clear_border
-import pytesseract
+import cv2
+from matplotlib import pyplot as plt
 import numpy as np
 import imutils
-import cv2
-import matplotlib.pyplot as plt
+import pytesseract
 
 
-class PyImageSearchANPR:
-    def __init__(self, minAR=4, maxAR=5, debug=False):
-        # store the minimum and maximum rectangular aspect ratio
-        # values along with whether or not we are in debug mode
-        self.minAR = minAR
-        self.maxAR = maxAR
+class NumberPlateReader:
+    def __init__(self, path_to_tesseract_exe, minAR=4, maxAR=5, debug=False):
+        self.minAr = minAR
+        self.maxAr = maxAR
         self.debug = debug
+        self.pathToTesseract = path_to_tesseract_exe
+        self.setup_tesseract(path=path_to_tesseract_exe)
 
-    def debug_imshow(self, title, image, waitKey=False):
+    def debug_imshow(self, image):
         # check to see if we are in debug mode, and if so, show the
         # image with the supplied title
         if self.debug:
-            plt.imshow(image)
+            plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
             plt.show()
-            cv2.imshow(title, image)
 
-            if waitKey:
-                cv2.waitKey(0)
+    def setup_tesseract(self, path):
+        print("Setting up tesseract...")
+        pytesseract.pytesseract.tesseract_cmd = path
 
-    def locate_license_plate_candidates(self, gray, keep=5):
-        # perform a blackhat morphological operation that will allow
-        # us to reveal dark regions (i.e., text) on light backgrounds
-        # (i.e., the license plate itself)
-        rectKern = cv2.getStructuringElement(cv2.MORPH_RECT, (13, 5))
-        blackhat = cv2.morphologyEx(gray, cv2.MORPH_BLACKHAT, rectKern)
-        self.debug_imshow("Blackhat", blackhat)
+    def process_image(self, img):
+        # Processing the image
+        print("Processing image...")
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        self.debug_imshow(gray)
 
-        # next, find regions in the image that are light
-        squreKern = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-        light = cv2.morphologyEx(gray, cv2.MORPH_CLOSE, squreKern)
-        light = cv2.threshold(
-            light, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
-        self.debug_imshow("Light Regions", light)
+        # Moise reduction
+        bfilter = cv2.bilateralFilter(gray, 11, 17, 17)
+        # Edge detection
+        edged = cv2.Canny(bfilter, 30, 200)
+        self.debug_imshow(edged)
 
-        # compute the Scharr gradient representation of the blackhat
-        # image in the x-direction and then scale the result back to
-        # the range [0, 255]
-        gradX = cv2.Sobel(blackhat, ddepth=cv2.CV_32F, dx=1, dy=0, ksize=-1)
-        gradX = np.absolute(gradX)
-        (minVal, maxVal) = (np.min(gradX), np.max(gradX))
-        gradX = 255 * ((gradX - minVal) / (maxVal - minVal))
-        gradX = gradX.astype("uint8")
-        self.debug_imshow("Scharr", gradX)
+        # Find the contours of the plate
+        keypoints = cv2.findContours(
+            edged.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        contours = imutils.grab_contours(keypoints)
+        contours = sorted(contours, key=cv2.contourArea, reverse=True)[:10]
 
-        # blur the gradient representation, applying a closing
-        # operation, and threshold the image using Otsu's method
-        gradX = cv2.GaussianBlur(gradX, (5, 5), 0)
-        gradX = cv2.morphologyEx(gradX, cv2.MORPH_CLOSE, rectKern)
-        thresh = cv2.threshold(
-            gradX, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
-        self.debug_imshow("Grand Thresh", thresh)
-
-        # perform a series of erosions and dilations to clean up the
-        # thresholded image
-        thresh = cv2.erode(thresh, None, iterations=2)
-        thresh = cv2.dilate(thresh, None, iterations=2)
-        self.debug_imshow("Grand Erode/Dilate", thresh)
-
-        # take the bitwise AND between the threshold result and the
-        # light regions of the image
-        thresh = cv2.bitwise_and(thresh, thresh, mask=light)
-        thresh = cv2.dilate(thresh, None, iterations=2)
-        thresh = cv2.erode(thresh, None, iterations=1)
-        self.debug_imshow("Final", thresh, waitKey=True)
-
-        # find contours in the thresholded image and sort them by
-        # their size in descending order, keeping only the largest
-        # ones
-        cnts = cv2.findContours(
-            thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        cnts = imutils.grab_contours(cnts)
-        cnts = sorted(cnts, key=cv2.contourArea, reverse=True)[:keep]
-
-        # return the list of contours
-        return cnts
-
-    def locate_license_plate(self, gray, candidates, clearBorder=False):
-        # initialize the license plate contour and ROI
-        lpCnt = None
-        roi = None
-
-        # loop over the license plate candidate contours
-        for c in candidates:
-            # compute the bounding box of the contour and then use
-            # the bounding box to derive the aspect ratio
-            (x, y, w, h) = cv2.boundingRect(c)
-            ar = w / float(h)
-
-            # check to see if the aspect ratio is rectangular
-            if ar >= self.minAR and ar <= self.maxAR:
-                # store the license plate contour and extract the
-                # license plate from the grayscale image and then
-                # threshold it
-                lpCnt = c
-                licensePlate = gray[y:y + h, x:x + w]
-                roi = cv2.threshold(licensePlate, 0, 255,
-                                    cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
-
-                # check to see if we should clear any foreground
-                # pixels touching the border of the image
-                # (which typically, not but always, indicates noise)
-                if clearBorder:
-                    roi = clear_border(roi)
-
-                # display any debugging information and then break
-                    # from the loop early since we have found the license
-                    # plate region
-                self.debug_imshow("License Plate", licensePlate)
-                self.debug_imshow("Roi", roi, waitKey=True)
+        # Find the 4 corners
+        location = None
+        for contour in contours:
+            approx = cv2.approxPolyDP(contour, 10, True)
+            if len(approx) == 4:
+                location = approx
                 break
 
-        # return a 2-tuple of the license plate ROI and the contour
-        # associated with it
-        return (roi, lpCnt)
+        mask = np.zeros(gray.shape, np.uint8)
+        new_image = cv2.drawContours(mask, [location], 0, 255, -1)
+        new_image = cv2.bitwise_and(img, img, mask=mask)
 
-    def build_tesseract_options(self, psm=7):
-        # tell Tesseract to only OCR alphanumeric characters
-        alphanumeric = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-        options = f"-c tessedit_char_whitelist={alphanumeric}"
-        # set the PSM mode
-        options += f" --psm {psm}"
-        # return the built options string
-        return '--oem 3 --psm 8 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+        self.debug_imshow(new_image)
 
-    def find_and_ocr(self, image, psm=7, clearBorder=False):
-        # initialize the license plate text
-        lpText = None
+        # Crop the image to just around the plate
+        (x, y) = np.where(mask == 255)
+        (x1, y1) = (np.min(x), np.min(y))
+        (x2, y2) = (np.max(x), np.max(y))
+        cropped_image = gray[x1:x2+2, y1:y2+2]
 
-        # convert the input image to grayscale, locate all candidate
-        # license plate regions in the image, and then process the
-        # candidates, leaving us with the *actual* license plate
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        candidates = self.locate_license_plate_candidates(gray)
-        (lp, lpCnt) = self.locate_license_plate(
-            gray, candidates, clearBorder=clearBorder)
+        self.debug_imshow(cropped_image)
 
-        print(f"find_and_ocr: lp={lp} lpCnt={lpCnt}")
-        # only OCR the license plate if the license plate ROI is not
-        # empty
-        if lp is not None:
-            # OCR the license plate
-            options = self.build_tesseract_options(psm=psm)
-            lpText = pytesseract.image_to_string(lp, config=options)
-            self.debug_imshow("License Plate", lp)
+        return cropped_image
 
-        # return a 2-tuple of the OCR'd license plate text along with
-        # the contour associated with the license plate region
-        return (lpText, lpCnt)
+    def read_text_from_image(self, image):
+        # Setting options for the tesseract
+        options = '--oem 3 --psm 8 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+
+        # Reading the text from the plate
+        print("Reading text...")
+        lpText = pytesseract.image_to_string(image, config=options)
+
+        if lpText is None:
+            print("Could not read text from image")
+
+        print("Done!")
+        return lpText
+
+    def read_number_plate(self, image):
+        processed_image = self.process_image(image)
+        lpText = self.read_text_from_image(processed_image)
+
+        return {"number_plate": lpText[0:-1], "sucess": True if lpText else False}
